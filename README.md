@@ -1,17 +1,18 @@
 # YOLOv5-ONNX-Training-for-Unity
 
-From start to finish with `YOLOv5 on Windows`: From custom training data to prepare `.onnx` file for `Android Unity inference`.
+From start to finish with `YOLOv5 on Windows`: From custom training data to prepare `.onnx` file for `Android Unity Barracuda inference`.
 
-This repository describes the process of preparing the training data, training `YOLOv5`, and ultimately creating an `ONNX` file that can be used in Unity barracuda.
+This repository describes the process of preparing the training data, training `YOLOv5`, and ultimately creating an `ONNX` file that can be used in `Unity barracuda`.
 
 If you have already prepared an `ONNX` file that can be used in Unity, refer to this [repository](https://github.com/wooni-github/YOLOv5-ONNX-Inference-UnityBarracuda):
 
 1. Prepare custom data and perform labeling using `CVAT`.
 2. Training with `YOLOv5` using PyTorch.
-3. Verify training results (`ONNX`) using a webcam.
-4. Converting to `ONNX` for inference in Unity.
+3. Converting to `.onnx` for inference in Unity.
+4. Verify training results (`.onnx`) using a webcam.
 
-(5. Inference in `Unity`.)
+
+(5. Inference in `Unity Barracuda`.)
 
 ## 0. Prerequisites (on windows)
 - git
@@ -21,11 +22,11 @@ If you have already prepared an `ONNX` file that can be used in Unity, refer to 
 
 ## 1. Prepare custom data and perform labeling using CVAT.
 ```bash
-[git bash]
+# [git bash]
 # From the directory you prefer
 cd C:\GithubProjects/
 
-# clone repository
+# clone cvat repository
 git clone https://github.com/openvinotoolkit/cvat.git
 cd cvat
 docker-compose up -d
@@ -35,16 +36,22 @@ Create a folder within the `dataset` folder and add the prepared dataset images.
 For example, I created a folder called `UnityTestDataset` inside the `dataset` folder and added the images.
  
 ```webpage
-[webpage]
+# [webpage]
 http://localhost:8080/
 ```
 
-Create a task and perform labeling. Once labeling is completed, export the task in COCO 1.0 format.
+Create a task and perform labeling. Once labeling is completed, export the task in `COCO 1.0 format`.
  
  ![CVAT_export](assets/1.CVAT_export.png)
  
- A `.zip` file will be downloaded. Place the `.json` file inside the `.zip` file into the dataset folder.
+ A `.zip` file will be downloaded. Place the `.json` file inside the `.zip` file into the `dataset folder`.
 
+ ![Data_prepared](assets/2.Data_prepared.png) 
+ 
+ Then, create a `class.names` file inside the folder, write the class names on separate lines, and save the file.
+
+ ![class_names](assets/3.class_names.png)
+ 
 ```bash
 your_directory (GithubProjects)/
 ├── cvat/
@@ -53,46 +60,39 @@ your_directory (GithubProjects)/
 │   ├── dataset/
 │       ├── your_dataset (UnityTestDataset)/
 │          ├── Images (1).jpg
-│          ├── Images (1).txt
 │          ├── ...
 │          ├── Images (26).jpg
-│          └── Images (26).txt
-│       ├── instances_default.json
-│       ├── class.names
+│          ├── instances_default.json
+│          └── class.names
 │   ├── convert2Yolo-master/
 │       ├── example.py
+│       ├── ..
 │       └── split.py
 │   └── yolov5-master/
 │       ├── requirements.txt
 │       └── ...
 ```
 
- ![Data_prepared](assets/2.Data_prepared.png) 
- 
  Next, create a Miniconda virtual environment and install the packages that suit your development environment.
  
 ```bash
-[git bash]
+# [git bash]
 # on your directory
 cd C:\GithubProjects/
 
 # clone this repository
 git clone https://github.com/wooni-github/YOLOv5-ONNX-Training-for-Unity
 
-[miniconda prompt]
+# [miniconda prompt]
 # on your directory
 cd C:\GithubProjects\YOLOv5-ONNX-Unity-Training
 conda create -n yolov5Unity python==3.8
 conda activate yolov5Unity
 pip install -r yolov5-master/requirements.txt
 
-[For my development environment. RTX3080, CUDA 11.6]
+# [For my development environment. RTX3080, CUDA 11.6]
 pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 -f https://download.pytorch.org/whl/torch_stable.html
 ```
-
-Then, create a `class.names` file inside the folder, write the class names on separate lines, and save the file.
-
- ![class_names](assets/3.class_names.png)
   
  By executing these commands, you'll ultimately achieve the following file structure, and your data preparation for `YOLOv5` training will be complete.
  Those commands convert the `COCO-formatted` files, which are the output of `CVAT`, into a format that can be utilized by `YOLOv5`. They also divide the data into train and valid sets (default, training 3 : valid 1). 
@@ -132,32 +132,33 @@ your_directory (GithubProjects)/
 │       └── dataset.yaml
 │   ├── convert2Yolo-master/
 │       ├── example.py
+│       ├── ...
 │       └── split.py
 │   └── yolov5-master/
 │       ├── requirements.txt
 │       ├── train.py
 │       ├── detect.py
 │       ├── export.py
-│       ├── export_onnx.py
+│       ├── export_unity_onnx.py
 │       ├── ...
-│       ├── yolov5s.pt # volov5 provided
-│       ├── yolov5s.onnx # converted .onnx 
-│       ├── best.onnx # after running export_onnx.py
+│       ├── yolov5s.pt # ultralytics volov5 provided
+│       ├── yolov5s.onnx # converted .onnx file
+│       ├── best.onnx # after running export_unity_onnx.py
 │       ├── runs/detect/exp/0.mp4 # after running detect.py
 │       └── runs/train/exp/weights/best.pt # after running (training) train.py
 ```
 
 ## 2. Training with YOLOv5 using PyTorch.
 
-- If your OS, GPU, and PyTorch development environment are fully compatible with `Ultralytics YOLOv5`, you should not encounter any major issues. 
+- If your OS, GPU (CUDA), and PyTorch development environment are fully compatible with `Ultralytics YOLOv5`, you should not encounter any major issues. 
 - In my case, it wasn't entirely compatible; however, I was able to train and perform inference (using a webcam) in a Miniconda environment. 
 - The only issue was that the `export.py` script, which converts the model to `ONNX` format for use in `Unity`, did not work properly (due to a TensorRT problem, I guess). 
-- As a result, I performed training and inference in the Miniconda environment and executed the ONNX conversion using Docker.
+- As a result, I performed training and inference in the Miniconda environment and executed the ONNX conversion using `Docker`.
 
-You can perform training using the command below, and the trained `.pt` file will be saved in the `YOLOv5-ONNX-Training-for-Unity\yolov5-master\runs\train\exp\weights` directory.
+You can perform training using the command below, and the trained `.pt` file will be saved in the `yolov5-master\runs\train\exp\weights` directory.
 
 ```bash
-[miniconda - Training]
+# [miniconda - Training]
 python yolov5-master/train.py --data dataset/UnityTestDataset/dataset.yaml --epochs 300 --batch-size 128
 ```
 
@@ -166,7 +167,7 @@ python yolov5-master/train.py --data dataset/UnityTestDataset/dataset.yaml --epo
 After the training is completed, if you have a webcam connected, you can use the following command to verify the training results:
 
 ```bash
-[miniconda Inference using detect.py]
+# [miniconda Inference using detect.py]
 python yolov5-master/detect.py --weights yolov5-master/runs/train/exp/weights/best.pt --source 0
 ```
 
@@ -182,7 +183,7 @@ Next, we will convert the `.pt` file to be used in `Unity barracuda`.
  ![error](assets/5.error.png)
  
 ```bash
-[error message (unity)]
+# [error message (unity)]
 Asset import failed, "Assets/Resources/MLModels/unity_best.onnx" > OnnxImportException: Unexpected error while parsing layer /model.24/Split_output_0 of type Split.
 Unsupported default attribute `split` for node /model.24/Split_output_0 of type Split. Value is required.
 
@@ -218,7 +219,7 @@ Therefore, I recommend converting the file using the new code that I added.
 When converting, it's a good to specify the size of the image that will be used for inference with `.onnx`. I set the size to `416x416`.
 
 ```bash
-[docker - export] 
+# [docker - export] 
 python export_unity_onnx.py --weights yolov5-master/runs/train/exp/weights/best.pt --img 416 416 --include unity_onnx --device 0
 ```
 
@@ -226,7 +227,7 @@ Once the conversion is successful, the `.onnx` file is saved in the `yolov5-mast
 When assigning the `.onnx` file to `detect.py` for inference, specify the image size.
 
 ```bash
-[detect]
+# [miniconda Inference using detect.py]
 python yolov5-master/detect.py --weights yolov5-master/unity_best.onnx --source 0 --imgsz 416 416
 ```
 
