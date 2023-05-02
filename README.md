@@ -4,9 +4,7 @@ From start to finish with `YOLOv5 on Windows`: From custom training data to prep
 
 This repository describes the process of preparing the training data, training `YOLOv5`, and ultimately creating an `ONNX` file that can be used in Unity barracuda.
 
-If you have already prepared an `ONNX` file that can be used in Unity, refer to this [repository](wooni-research.tistory.com):
-
----
+If you have already prepared an `ONNX` file that can be used in Unity, refer to this [repository](https://github.com/wooni-github/YOLOv5-ONNX-Inference-UnityBarracuda):
 
 1. Prepare custom data and perform labeling using `CVAT`.
 2. Training with `YOLOv5` using PyTorch.
@@ -15,14 +13,11 @@ If you have already prepared an `ONNX` file that can be used in Unity, refer to 
 
 (5. Inference in `Unity`.)
 
-
---- 
 ## 0. Prerequisites (on windows)
 - git
 - Docker
 - miniconda
 - CUDA, cuDNN
----
 
 ## 1. Prepare custom data and perform labeling using CVAT.
 ```bash
@@ -50,7 +45,7 @@ Create a task and perform labeling. Once labeling is completed, export the task 
  
  A `.zip` file will be downloaded. Place the `.json` file inside the `.zip` file into the dataset folder.
 
-```apex
+```bash
 your_directory (GithubProjects)/
 ├── cvat/
 │   └──...
@@ -109,10 +104,7 @@ Then, create a `class.names` file inside the folder, write the class names on se
 
 Refer to my folder structure as an example. I set the default folder `your_directory` to `GithubProjects` and the dataset `your_dataset` to `UnityTestDataset`.
 
-
-
-
-```apex
+```bash
 your_directory (GithubProjects)/
 ├── cvat/
 │   └──...
@@ -189,7 +181,7 @@ Next, we will convert the `.pt` file to be used in `Unity barracuda`.
 
  ![error](assets/5.error.png)
  
-```apex
+```bash
 [error message (unity)]
 Asset import failed, "Assets/Resources/MLModels/unity_best.onnx" > OnnxImportException: Unexpected error while parsing layer /model.24/Split_output_0 of type Split.
 Unsupported default attribute `split` for node /model.24/Split_output_0 of type Split. Value is required.
@@ -238,7 +230,7 @@ When assigning the `.onnx` file to `detect.py` for inference, specify the image 
 python yolov5-master/detect.py --weights yolov5-master/unity_best.onnx --source 0 --imgsz 416 416
 ```
 
-Now that you have created an `.onnx` file that can be used in `Unity barracuda`, you can refer to this repository for the code to perform inference in Unity.
+Now that you have created an `.onnx` file that can be used in `Unity barracuda`, you can refer to this [repository](https://github.com/wooni-github/YOLOv5-ONNX-Inference-UnityBarracuda) for the code to perform inference in Unity.
 
 This repository was developed with reference to the following repositories:
 - [CVAT](https://github.com/openvinotoolkit/cvat.git)
